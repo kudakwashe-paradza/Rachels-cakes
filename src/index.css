@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&family=Dancing+Script:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply font-body bg-cream-50 text-cocoa-800 antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply max-w-7xl mx-auto px-6 sm:px-8 lg:px-12;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-blush-500 text-white font-medium tracking-wide shadow-lg shadow-blush-500/30 transition-all duration-300 hover:bg-blush-600 hover:shadow-xl hover:shadow-blush-500/40 hover:-translate-y-0.5 active:translate-y-0;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full border border-cocoa-300 text-cocoa-700 font-medium tracking-wide transition-all duration-300 hover:bg-cocoa-800 hover:text-cream-50 hover:border-cocoa-800;
+  }
+  .section-eyebrow {
+    @apply inline-block font-script text-blush-500 text-2xl md:text-3xl mb-2;
+  }
+  .reveal {
+    @apply opacity-0;
+  }
+  .reveal.is-visible {
+    @apply animate-fade-up;
+  }
+}
