@@ -194,7 +194,7 @@ export default function Contact() {
                   <div className="flex items-center gap-3 p-4 rounded-2xl bg-sage-100 text-sage-700 animate-fade-in">
                     <CheckCircle2 className="w-5 h-5 shrink-0" />
                     <p className="text-sm">
-                      Thank you! Rachel will reply within two business days.
+                      Thank you! Rachel will reply within the business day.
                     </p>
                   </div>
                 )}
