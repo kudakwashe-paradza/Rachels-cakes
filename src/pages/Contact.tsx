@@ -4,7 +4,8 @@
 
 import { useState, FormEvent } from 'react';
 import { useReveal } from '@/hooks/useReveal';
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle2, ShoppingBag, MessageCircle } from 'lucide-react';
+import { submitCakeOrder, submitContactMessage } from '@/lib/supabase';
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle2, AlertCircle, ShoppingBag, MessageCircle } from 'lucide-react';
 
 const contactInfo = [
   { icon: MapPin, label: 'Address', value: 'Njolwe street, Winterpark' },
@@ -22,20 +23,66 @@ export default function Contact() {
   const ref = useReveal<HTMLDivElement>();
   const [tab, setTab] = useState<Tab>('order');
   const [orderSent, setOrderSent] = useState(false);
+  const [orderSubmitting, setOrderSubmitting] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
   const [connectSent, setConnectSent] = useState(false);
+  const [connectSubmitting, setConnectSubmitting] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
 
-  const handleOrderSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleOrderSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setOrderSent(true);
-    (e.target as HTMLFormElement).reset();
-    setTimeout(() => setOrderSent(false), 6000);
+    const form = e.target as HTMLFormElement;
+    const data = new FormData(form);
+
+    setOrderSubmitting(true);
+    setOrderError(null);
+
+    try {
+      await submitCakeOrder({
+        name: String(data.get('name') ?? ''),
+        email: String(data.get('email') ?? ''),
+        phone: String(data.get('phone') ?? '') || undefined,
+        event_date: String(data.get('date') ?? '') || undefined,
+        occasion: String(data.get('occasion') ?? '') || undefined,
+        message: String(data.get('message') ?? ''),
+      });
+      setOrderSent(true);
+      form.reset();
+      setTimeout(() => setOrderSent(false), 6000);
+    } catch (err) {
+      setOrderError(
+        err instanceof Error ? err.message : 'Something went wrong sending your request. Please try again.'
+      );
+    } finally {
+      setOrderSubmitting(false);
+    }
   };
 
-  const handleConnectSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleConnectSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setConnectSent(true);
-    (e.target as HTMLFormElement).reset();
-    setTimeout(() => setConnectSent(false), 6000);
+    const form = e.target as HTMLFormElement;
+    const data = new FormData(form);
+
+    setConnectSubmitting(true);
+    setConnectError(null);
+
+    try {
+      await submitContactMessage({
+        name: String(data.get('connect_name') ?? ''),
+        email: String(data.get('connect_email') ?? ''),
+        reason: String(data.get('reason') ?? '') || undefined,
+        message: String(data.get('connect_message') ?? ''),
+      });
+      setConnectSent(true);
+      form.reset();
+      setTimeout(() => setConnectSent(false), 6000);
+    } catch (err) {
+      setConnectError(
+        err instanceof Error ? err.message : 'Something went wrong sending your message. Please try again.'
+      );
+    } finally {
+      setConnectSubmitting(false);
+    }
   };
 
   return (
@@ -138,9 +185,9 @@ export default function Contact() {
                   />
                 </div>
 
-                <button type="submit" className="btn-primary w-full sm:w-auto">
+                <button type="submit" disabled={orderSubmitting} className="btn-primary w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed">
                   <Send className="w-4 h-4" />
-                  Send your request
+                  {orderSubmitting ? 'Sending…' : 'Send your request'}
                 </button>
 
                 {orderSent && (
@@ -149,6 +196,13 @@ export default function Contact() {
                     <p className="text-sm">
                       Thank you! Rachel will reply within two business days.
                     </p>
+                  </div>
+                )}
+
+                {orderError && (
+                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-red-50 text-red-700 animate-fade-in">
+                    <AlertCircle className="w-5 h-5 shrink-0" />
+                    <p className="text-sm">{orderError}</p>
                   </div>
                 )}
               </form>
@@ -203,10 +257,11 @@ export default function Contact() {
 
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-cocoa-800 text-white font-medium shadow-md hover:bg-cocoa-900 hover:-translate-y-0.5 transition-all duration-300"
+                  disabled={connectSubmitting}
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-cocoa-800 text-white font-medium shadow-md hover:bg-cocoa-900 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <Send className="w-4 h-4" />
-                  Send message
+                  {connectSubmitting ? 'Sending…' : 'Send message'}
                 </button>
 
                 {connectSent && (
@@ -215,6 +270,13 @@ export default function Contact() {
                     <p className="text-sm">
                       Message received! Rachel will be in touch soon.
                     </p>
+                  </div>
+                )}
+
+                {connectError && (
+                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-red-50 text-red-700 animate-fade-in">
+                    <AlertCircle className="w-5 h-5 shrink-0" />
+                    <p className="text-sm">{connectError}</p>
                   </div>
                 )}
               </form>

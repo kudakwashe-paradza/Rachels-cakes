@@ -1,8 +1,9 @@
 
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useReveal } from '@/hooks/useReveal';
-import { X, Cake } from 'lucide-react';
+import { fetchCakes, type Cake } from '@/lib/supabase';
+import { X, Cake as CakeIcon } from 'lucide-react';
 
 type Page = 'home' | 'about' | 'creations' | 'contact';
 
@@ -12,46 +13,26 @@ interface Props {
 
 type Category = 'All' | 'Wedding' | 'Birthday' | 'Cupcakes' | 'Macarons';
 
-interface Creation {
-  id: number;
-  category: Exclude<Category, 'All'>;
-  image: string;
-}
-
-const creations: Creation[] = [
-  { id: 1, category: 'Birthday', image: '/sophia.png' },
-  { id: 2, category: 'Wedding', image: '/green and white.jpg' },
-  { id: 3, category: 'Birthday', image: '/white and pink.jpg' },
-  { id: 4, category: 'Birthday', image: '/white and pink2.jpg' },
-  { id: 5, category: 'Birthday', image: '/spongebob.jpg' },
-  { id: 6, category: 'Birthday', image: '/lion king.jpg' },
-  { id: 7, category: 'Birthday', image: '/white.jpeg' },
-  { id: 8, category: 'Wedding', image: '/white chocolate.jpg' },
-  { id: 9, category: 'Birthday', image: '/Elsa.jpg' },
-  { id: 10, category: 'Birthday', image: '/white2.jpg' },
-  { id: 11, category: 'Birthday', image: '/orange nad white.jpg' },
-  { id: 12, category: 'Birthday', image: '/car.jpg' },
-  { id: 13, category: 'Birthday', image: '/blue.jpg' },
-  { id: 14, category: 'Birthday', image: '/pink.jpg' },
-  { id: 15, category: 'Wedding', image: '/wedding.jpg' },
-  { id: 16, category: 'Wedding', image: '/wedding orange.jpg' },
-  { id: 17, category: 'Birthday', image: '/barbie.jpg' },
-  { id: 18, category: 'Birthday', image: '/Spiderman.jpg' },
-  { id: 19, category: 'Birthday', image: '/sophia2.jpg' },
-  { id: 20, category: 'Wedding', image: '/White and green better view.jpg' },
-  { id: 21, category: 'Birthday', image: '/elsa2.jpg' },
-];
-
 const categories: Category[] = ['All', 'Wedding', 'Birthday', 'Cupcakes', 'Macarons'];
 
 export default function Creations({ onNavigate }: Props) {
   const ref = useReveal<HTMLDivElement>();
   const [active, setActive] = useState<Category>('All');
-  const [selected, setSelected] = useState<Creation | null>(null);
+  const [selected, setSelected] = useState<Cake | null>(null);
+  const [cakes, setCakes] = useState<Cake[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchCakes()
+      .then(setCakes)
+      .catch((err) => setError(err instanceof Error ? err.message : 'Could not load the gallery.'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = useMemo(
-    () => (active === 'All' ? creations : creations.filter((c) => c.category === active)),
-    [active]
+    () => (active === 'All' ? cakes : cakes.filter((c) => c.category === active)),
+    [active, cakes]
   );
 
   return (
@@ -106,9 +87,9 @@ export default function Creations({ onNavigate }: Props) {
               >
                 <div className="relative overflow-hidden aspect-[4/3]">
                   <img
-                    src={c.image}
+                    src={c.image_url}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    alt={c.category}
+                    alt={c.title ?? c.category}
                   />
                   <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/90 backdrop-blur text-xs font-medium text-cocoa-700">
                     {c.category}
@@ -118,7 +99,13 @@ export default function Creations({ onNavigate }: Props) {
             ))}
           </div>
 
-          {filtered.length === 0 && (
+          {loading && <p className="text-center text-cocoa-500 py-16">Loading the gallery…</p>}
+
+          {!loading && error && (
+            <p className="text-center text-red-600 py-16">{error}</p>
+          )}
+
+          {!loading && !error && filtered.length === 0 && (
             <p className="text-center text-cocoa-500 py-16">No creations in this category yet.</p>
           )}
         </div>
@@ -127,7 +114,7 @@ export default function Creations({ onNavigate }: Props) {
       {/* CTA */}
       <section className="py-20 bg-cream-100">
         <div className="container-page text-center">
-          <Cake className="reveal w-10 h-10 text-blush-500 mx-auto mb-4" strokeWidth={1.5} />
+          <CakeIcon className="reveal w-10 h-10 text-blush-500 mx-auto mb-4" strokeWidth={1.5} />
           <h2 className="reveal font-display text-4xl text-cocoa-900 mb-4">
             Don't see exactly what you want?
           </h2>
@@ -159,9 +146,9 @@ export default function Creations({ onNavigate }: Props) {
               <X className="w-5 h-5" />
             </button>
             <img
-              src={selected.image}
+              src={selected.image_url}
               className="w-full max-h-[70vh] object-contain bg-cocoa-900/5"
-              alt={selected.category}
+              alt={selected.title ?? selected.category}
             />
             <div className="p-8">
               <span className="inline-block px-3 py-1 rounded-full bg-blush-100 text-blush-700 text-xs font-medium mb-3">
