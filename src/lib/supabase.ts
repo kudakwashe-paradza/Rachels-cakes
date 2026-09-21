@@ -4,8 +4,7 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  // Surfaces a clear error in the browser console during local dev / build
-  // instead of a cryptic failure deep inside supabase-js.
+
   console.error(
     'Missing Supabase env vars. Create a .env file (see .env.example) with ' +
       'VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, and set the same in your ' +
@@ -41,7 +40,6 @@ export async function submitContactMessage(input: ContactMessageInput) {
   if (error) throw error;
 }
 
-// --- Cake gallery -----------------------------------------------------
 
 export type CakeCategory = 'Wedding' | 'Birthday' | 'Cupcakes' | 'Macarons';
 
@@ -92,10 +90,7 @@ export async function deleteCake(cake: Cake) {
   if (error) throw error;
 }
 
-// --- Admin auth ---------------------------------------------------------
-// Rachel's login is a single Supabase Auth user, created once in the
-// Supabase dashboard (Authentication → Users → Add user). There's no
-// public sign-up flow on the site.
+
 
 export async function signInAdmin(email: string, password: string) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
