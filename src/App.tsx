@@ -6,11 +6,12 @@ import About from '@/pages/About';
 import Creations from '@/pages/Creations';
 import Learn from '@/pages/Learn';
 import Contact from '@/pages/Contact';
+import Admin from '@/pages/Admin';
 
-type Page = 'home' | 'about' | 'creations' | 'learn' | 'contact';
+type Page = 'home' | 'about' | 'creations' | 'learn' | 'contact' | 'admin';
 
 export default function App() {
-  const [page, setPage] = useState<Page>('home');
+  const [page, setPage] = useState<Page>(window.location.hash === '#admin' ? 'admin' : 'home');
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
@@ -18,15 +19,16 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-cream-50">
-      <Navbar current={page} onNavigate={setPage} />
+      {page !== 'admin' && <Navbar current={page} onNavigate={setPage} />}
       <main className="flex-1">
         {page === 'home' && <Landing onNavigate={setPage} />}
         {page === 'about' && <About onNavigate={setPage} />}
         {page === 'creations' && <Creations onNavigate={setPage} />}
         {page === 'learn' && <Learn onNavigate={setPage} />}
         {page === 'contact' && <Contact />}
+        {page === 'admin' && <Admin />}
       </main>
-      <Footer onNavigate={setPage} />
+      {page !== 'admin' && <Footer onNavigate={setPage} />}
     </div>
   );
 }
